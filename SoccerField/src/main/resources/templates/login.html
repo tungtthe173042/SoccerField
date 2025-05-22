@@ -129,13 +129,13 @@
         body: params.toString()
     })
     .then(response => {
-        console.log('Status:', response.status);
         if (response.ok) return response.json();
         throw new Error('Login failed');
     })
     .then(data => {
         console.log('Login successful:', data);
-        window.location.href = 'index.html';
+        if(data.role == 2) window.location.href = 'manageAccount.html';
+        else window.location.href = 'order.html';
     })
     .catch(error => {
         console.error('Error:', error);

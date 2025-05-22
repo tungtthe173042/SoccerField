@@ -28,9 +28,4 @@ public class OrderService
 	{
 		return orderRepository.save(order);
 	}
-
-	public List<Order> getOrdersByUserId(int userId)
-	{
-		return orderRepository.findAllByUserId(userId);
-	}
 }

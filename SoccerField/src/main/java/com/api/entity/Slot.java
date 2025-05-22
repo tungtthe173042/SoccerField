@@ -21,6 +21,10 @@ public class Slot
 
 	private float surcharge;
 
+	public Slot()
+	{
+	}
+
 	public Slot(LocalTime startTime, float surcharge, LocalTime endTime)
 	{
 		this.startTime = startTime;

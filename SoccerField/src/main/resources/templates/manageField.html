@@ -57,7 +57,23 @@
 <body>
 <div id="sidebar-container"></div>
 <div class="main-content">
-    <h1>Quản lý tài khoản</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Quản lý sân</h1>
+        <button style="
+              background-color: #4CAF50; /* màu xanh lá */
+              color: white;             /* chữ màu trắng */
+              padding: 8px 16px;        /* khoảng cách trong nút */
+              border: none;             /* bỏ viền mặc định */
+              border-radius: 5px;       /* bo góc */
+              cursor: pointer;          /* con trỏ khi hover */
+              font-weight: bold;
+              transition: background-color 0.3s ease;
+            "
+                onmouseover="this.style.backgroundColor='#45a049'"
+                onmouseout="this.style.backgroundColor='#4CAF50'" onclick="openForm()">
+            ADD
+        </button>
+    </div>
     <table id="fieldTable">
         <thead>
         <tr>
@@ -73,6 +89,40 @@
         </tbody>
     </table>
 </div>
+<!-- Popup form -->
+<div id="addFieldForm"
+     style="display:none; position:fixed; top:20%; left:30%; background:white; padding:20px; border:1px solid gray; border-radius:10px;">
+    <h3>Add New Field</h3>
+    <label>Field Name:</label><br>
+    <input type="text" id="fieldName"><br><br>
+
+    <label>Price:</label><br>
+    <input type="number" id="price" step="0.01"><br><br>
+
+    <label>Image:</label><br>
+    <input type="file" id="image"><br><br>
+
+    <button onclick="add()">Submit</button>
+    <button onclick="closeForm()">Cancel</button>
+</div>
+<div id="updateFieldForm"
+     style="display:none; position:fixed; top:20%; left:30%; background:white; padding:20px; border:1px solid gray; border-radius:10px;">
+    <h3>Update Field</h3>
+    <label>Field Id:</label><br>
+    <input type="text" id="updatefieldId" readonly><br><br>
+
+    <label>Field Name:</label><br>
+    <input type="text" id="updatefieldName"><br><br>
+
+    <label>Price:</label><br>
+    <input type="number" id="updateprice" step="0.01"><br><br>
+
+    <label>Image:</label><br>
+    <input type="file" id="updateimage"><br><br>
+
+    <button onclick="update()">Submit</button>
+    <button onclick="closeFormUpdate()">Cancel</button>
+</div>
 <script>
     fetch('sidebar.html')
       .then(res => res.text())
@@ -81,7 +131,158 @@
       });
 </script>
 <script>
-    // call api
+    fetch(`http://localhost:8082/api/field`, {
+        method: 'GET'
+    })
+    .then(response => {
+        if (response.ok) return response.json();
+        throw new Error('Fetch data failed');
+    })
+    .then(data => {
+        console.log('Search result:', data);
+        renderTable(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Không có dữ liệu.');
+    });
+    function renderTable(data) {
+        const tbody = document.querySelector('#fieldTable tbody');
+        tbody.innerHTML = ''; // Clear existing rows
+        data.forEach(field => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${field.fieldId}</td>
+                <td>${field.fieldName}</td>
+                <td>${field.price}</td>
+                <td><img src="${field.imageUrl}" alt="Field Image" style="width:200px;"></td>
+                <td>
+                    <div style="display: flex; justify-content: space-around; align-items: center;">
+                        <button
+                        type="button"
+                        style="background:green;color:white;padding: 5px 10px;
+                        border: none;border-radius: 4px;width:100px"
+                        onclick="openFormUpdate(${field.fieldId})">Sửa</button>
+                        <button
+                        type="button"
+                        style="background:red;color:white;padding: 5px 10px;
+                        border: none;border-radius: 4px;width:100px"
+                        onclick="deleteField(${field.fieldId})">Xóa</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+</script>
+<script>
+    function openForm() {
+        document.getElementById('addFieldForm').style.display = 'block';
+    }
+
+    function closeForm() {
+        document.getElementById('addFieldForm').style.display = 'none';
+    }
+
+    function add() {
+        const fieldName = document.getElementById('fieldName').value.trim();
+        const price = document.getElementById('price').value;
+        const image = document.getElementById('image').files[0];
+
+        if (!fieldName || !price || !image) {
+            alert("Please fill all fields.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("fieldName", fieldName);
+        formData.append("price", price);
+        formData.append("image", image);
+
+        fetch("http://localhost:8082/api/field/add", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Failed to add field");
+            return response.json();
+        })
+        .then(data => {
+            alert("Field added successfully!");
+            console.log("Created:", data);
+            location.reload();
+            closeForm();
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Error adding field.");
+        });
+    }
+</script>
+<script>
+    function deleteField(id) {
+        if (confirm("Bạn có chắc chắn muốn xóa sân này không?")) {
+            fetch(`http://localhost:8082/api/field/delete?fieldId=${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Sân đã được xóa thành công!");
+                    location.reload();
+                } else {
+                    throw new Error('Xóa sân thất bại');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Xóa sân thất bại.');
+            });
+        }
+    }
+    function openFormUpdate(id) {
+        document.getElementById('updateFieldForm').style.display = 'block';
+        document.getElementById('updatefieldId').value = id;
+    }
+
+    function closeFormUpdate() {
+        document.getElementById('updateFieldForm').style.display = 'none';
+    }
+    function update() {
+        const fieldId = document.getElementById('updatefieldId').value;
+        const fieldName = document.getElementById('updatefieldName').value.trim();
+        const price = document.getElementById('updateprice').value;
+        const image = document.getElementById('updateimage').files[0];
+
+        if (!fieldName || !price || !image) {
+            alert("Please fill all fields.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("fieldId", fieldId);
+        formData.append("fieldName", fieldName);
+        formData.append("price", price);
+        formData.append("image", image);
+
+        fetch(`http://localhost:8082/api/field/update`, {
+            method: "POST",
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Failed to update field");
+            return response.json();
+        })
+        .then(data => {
+            alert("Field updated successfully!");
+            console.log("Updated:", data);
+            location.reload();
+            closeFormUpdate();
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Error updating field.");
+        });
+    }
 </script>
 </body>
 </html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order</title>
+    <style>
+        body {
+          margin: 0;
+          background: #f4f4f4;
+          font-family: 'Segoe UI', sans-serif;
+        }
+        .main-content {
+          margin-left: 220px;
+          padding: 20px;
+        }
+
+        body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f9f9f9;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .logout-btn {
+      padding: 8px 16px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    input[type="date"] {
+        padding: 10px;
+        border: 2px solid #4caf50;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        color: #333;
+        font-size: 16px;
+        font-family: Arial, sans-serif;
+        outline: none;
+        transition: border-color 0.3s ease;
+      }
+
+      input[type="date"]:hover {
+        border-color: #388e3c;
+      }
+
+      input[type="date"]:focus {
+        border-color: #2e7d32;
+        background-color: #fff;
+      }
+
+      /* Ẩn biểu tượng calendar (tuỳ vào trình duyệt) */
+      input[type="date"]::-webkit-calendar-picker-indicator {
+        background-color: #4caf50;
+        padding: 5px;
+        border-radius: 4px;
+        cursor: pointer;
+        filter: invert(1);
+      }
+    </style>
+</head>
+<body>
+<div id="sidebar-container"></div>
+<div class="main-content">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Đặt sân </h1>
+        <input type="date" id="datePicker"/>
+    </div>
+    <table id="orderTable">
+        <thead>
+        <tr>
+            <th>Mã sân</th>
+            <th>Tên sân</th>
+            <th>Ảnh sân</th>
+            <th>Giờ bắt đầu</th>
+            <th>Giờ bắt đầu</th>
+            <th>Giá sân</th>
+            <th>Phí khung giờ</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Dữ liệu sẽ được render ở đây -->
+        </tbody>
+    </table>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const today = new Date().toISOString().split('T')[0];
+        const dateInput = document.getElementById('datePicker');
+        dateInput.value = today;
+        dateInput.min = today; // Set minimum date to today
+
+        dateInput.addEventListener('change', fetchAndRenderOrders);
+
+        // Load sidebar
+        fetch('sidebar_customer.html')
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('sidebar-container').innerHTML = html;
+            });
+
+        // Fetch fields and slots
+        fetchAndRenderOrders();
+
+        function fetchAndRenderOrders() {
+            const selectedDate = dateInput.value;
+            fetch('http://localhost:8082/api/field')
+                .then(response => {
+                    if (response.ok) return response.json();
+                    throw new Error('Fetch field data failed');
+                })
+                .then(fields => {
+                    console.log('Fields:', fields);
+                    renderTable(fields, selectedDate);
+                })
+                .catch(error => {
+                    console.error('Error fetching fields:', error);
+                    alert('Không có dữ liệu sân.');
+                });
+        }
+
+        function renderTable(fields, date) {
+            const tableBody = document.querySelector('#orderTable tbody');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            fields.forEach(field => {
+                fetch(`http://localhost:8082/api/slot`, {
+                        method: 'GET'
+                    })
+                    .then(res => {
+                        if (res.ok) return res.json();
+                        throw new Error(`Fetch slots failed for field ${field.id}`);
+                    })
+                    .then(slots => {
+                        slots.forEach(slot => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${field.fieldId}</td>
+                                <td>${field.fieldName}</td>
+                                <td><img src="${field.imageUrl}" alt="Field Image" style="width:200px;"></td>
+                                <td>${slot.startTime}</td>
+                                <td>${slot.endTime}</td>
+                                <td>${field.price}</td>
+                                <td>${slot.surcharge}</td>
+                                <td>
+                                    <button type="button" style="background:green;color:white;padding: 5px 10px; border: none;border-radius: 4px;width:100px" onclick="order('${field.fieldName}', '${slot.startTime}', '${field.price}', '${slot.surcharge}', '${slot.endTime}')">Đặt sân</button>
+                                </td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    })
+                    .catch(error => {
+                        console.error(`Error fetching slots for field ${field.id}:`, error);
+                    });
+            });
+        }
+    });
+
+    function order(fieldName, startTime, price, surcharge, endTime) {
+        const dateInput = document.getElementById('datePicker');
+        const selectedDate = dateInput.value;
+
+        const params = new URLSearchParams();
+        params.append("userId", 2);
+        params.append("fieldName", fieldName.toString());
+        params.append("startTime", startTime);
+        params.append("endTime", endTime);
+        params.append("date", selectedDate);
+        params.append("price", price);
+        params.append("surcharge", surcharge);
+
+        fetch('http://localhost:8082/api/orders/add', {
+            method: 'POST',
+            body: params.toString(),
+        })
+        .then(response => {
+            if (response.ok) return response.json();
+            throw new Error('Order failed');
+        })
+        .then(data => {
+            console.log('Order successful:', data);
+            alert('Đặt sân thành công!');
+        })
+        .catch(error => {
+            console.error('Error placing order:', error);
+            alert('Đặt sân thất bại.');
+        });
+    }
+</script>
+
+</body>
+</html>

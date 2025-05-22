@@ -18,6 +18,10 @@ public class Field
 	@Column(name = "image_url")
 	private String imageUrl;
 
+	public Field()
+	{
+	}
+
 	public Field(String fieldName, float price, String imageUrl)
 	{
 		this.fieldName = fieldName;

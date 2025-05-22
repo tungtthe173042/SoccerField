@@ -38,7 +38,7 @@ public class FieldService
 		return fieldRepository.search(fieldName, price);
 	}
 
-	public Field updateField(int fieldId, String fieldName, float price, MultipartFile image)
+	public Field updateField(long fieldId, String fieldName, float price, MultipartFile image)
 	{
 		Field field = fieldRepository.findById(fieldId).orElse(null);
 		if (field != null)
@@ -60,17 +60,21 @@ public class FieldService
 		return field;
 	}
 
-	private String saveImage(MultipartFile image, int fieldId)
+	private String saveImage(MultipartFile image, long fieldId)
 	{
-		String imageUrl = "/image/field/" + fieldId + "_" + fieldId + image.getOriginalFilename().substring(image.getOriginalFilename().lastIndexOf('.'));
+		String extension = image.getOriginalFilename().substring(image.getOriginalFilename().lastIndexOf('.'));
+		String imageName = "field_" + fieldId+ extension;
+		String imageUrl = "/static/field/" + imageName;
+
 		try
 		{
-			String folderPath = "src/main/resources/static/image/field/";
+			String folderPath = System.getProperty("user.dir") + "/static/field/";
 			File directory = new File(folderPath);
 			if (!directory.exists())
 			{
 				directory.mkdirs();
 			}
+
 			File[] files = directory.listFiles((d, name) -> name.startsWith("field_" + fieldId));
 			if (files != null)
 			{
@@ -83,26 +87,48 @@ public class FieldService
 					}
 				}
 			}
-			image.transferTo(new File(folderPath + imageUrl));
+
+			File outputFile = new File(folderPath + imageName);
+			image.transferTo(outputFile);
+
 		}
 		catch (Exception e)
 		{
 			throw new RuntimeException("Failed to save image", e);
 		}
+
 		return imageUrl;
 	}
 
-	public boolean deleteField(int fieldId)
+
+	public boolean deleteField(long fieldId)
 	{
-		if (!fieldRepository.existsById(fieldId))
+		if(fieldRepository.existsById(fieldId))
 		{
-			return false;
+			fieldRepository.deleteById(fieldId);
+			String folderPath = System.getProperty("user.dir") + "/static/field/";
+			File directory = new File(folderPath);
+			if (directory.exists())
+			{
+				File[] files = directory.listFiles((d, name) -> name.startsWith("field_" + fieldId));
+				if (files != null)
+				{
+					for (File file : files)
+					{
+						boolean deleted = file.delete();
+						if (!deleted)
+						{
+							System.out.println("Không thể xóa file: " + file.getAbsolutePath());
+						}
+					}
+				}
+			}
+			return true;
 		}
-		fieldRepository.deleteById(fieldId);
-		return true;
+		return false;
 	}
 
-	public Field getFieldById(int id)
+	public Field getFieldById(long id)
 	{
 		return fieldRepository.findById(id)
 				.orElse(null);

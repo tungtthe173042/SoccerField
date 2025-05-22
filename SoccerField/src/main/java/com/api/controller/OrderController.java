@@ -1,14 +1,15 @@
 package com.api.controller;
 
 import com.api.entity.Order;
+import com.api.entity.User;
+import com.api.service.AuthenticateService;
 import com.api.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -17,28 +18,16 @@ public class OrderController
 {
 	@Autowired
 	private OrderService orderService;
-
-	@GetMapping()
-	public ResponseEntity<List<Order>> getAllOrders()
-	{
-		List<Order> orders = orderService.getAllOrders();
-		return orders != null && !orders.isEmpty()
-				? ResponseEntity.ok(orders)
-				: ResponseEntity.noContent().build();
-	}
-
-	@GetMapping("/{userId}")
-	public ResponseEntity<List<Order>> getOrdersByUserId(int userId)
-	{
-		List<Order> orders = orderService.getOrdersByUserId(userId);
-		return orders != null && !orders.isEmpty()
-				? ResponseEntity.ok(orders)
-				: ResponseEntity.noContent().build();
-	}
+	private AuthenticateService authenticateService;
 
 	@PostMapping("/add")
-	public ResponseEntity<Order> addOrder(Order order)
+	public ResponseEntity<Order> addOrder(@RequestParam String fieldName, @RequestParam LocalTime startTime,
+	                                      @RequestParam LocalTime endTime, @RequestParam int userId,
+	                                      @RequestParam LocalDate selectedDate, @RequestParam float price,
+	                                      @RequestParam float surcharge)
 	{
+		User user = authenticateService.getUserById(userId);
+		Order order = new Order(user, fieldName, startTime, endTime, selectedDate, price, surcharge, price + surcharge);
 		Order newOrder = orderService.addOrder(order);
 		return newOrder != null
 				? ResponseEntity.ok(newOrder)

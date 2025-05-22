@@ -3,9 +3,11 @@ package com.api.controller;
 import com.api.entity.Slot;
 import com.api.service.SlotService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -33,14 +35,14 @@ public class SlotController
 	}
 
 	@PostMapping("/add")
-	public ResponseEntity<Slot> addSlot(@RequestParam LocalTime startTime, @RequestParam LocalTime endTime, @RequestParam float surcharge)
+	public ResponseEntity<Slot> addSlot(@RequestParam @DateTimeFormat(pattern = "HH:mm") LocalTime startTime, @RequestParam @DateTimeFormat(pattern = "HH:mm") LocalTime endTime, @RequestParam float surcharge)
 	{
 		Slot slot = slotService.addSlot(startTime, endTime, surcharge);
 		return slot != null ? ResponseEntity.ok(slot) : ResponseEntity.status(400).body(null);
 	}
 
-	@PatchMapping("/update/{id}")
-	public ResponseEntity<Slot> updateSlot(@PathVariable int slotId, @RequestParam LocalTime startTime, @RequestParam LocalTime endTime, @RequestParam float surcharge)
+	@PostMapping("/update")
+	public ResponseEntity<Slot> updateSlot(@RequestParam int slotId, @RequestParam @DateTimeFormat(pattern = "HH:mm") LocalTime startTime, @RequestParam @DateTimeFormat(pattern = "HH:mm") LocalTime endTime, @RequestParam float surcharge)
 	{
 		Slot slot = slotService.updateSlot(slotId, startTime, endTime, surcharge);
 		return slot != null ? ResponseEntity.ok(slot) : ResponseEntity.status(404).body(null);
@@ -53,4 +55,5 @@ public class SlotController
 				? ResponseEntity.ok("Slot deleted successfully")
 				: ResponseEntity.status(404).body("Slot not found");
 	}
+
 }

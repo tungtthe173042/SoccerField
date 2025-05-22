@@ -1,20 +1,25 @@
 package com.api.service;
 
+import com.api.entity.Order;
 import com.api.entity.Slot;
 import com.api.repository.SlotRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class SlotService
 {
 	private final SlotRepository slotRepository;
+	private final OrderService orderService;
 
-	public SlotService(SlotRepository slotRepository)
+	public SlotService(SlotRepository slotRepository, OrderService orderService)
 	{
 		this.slotRepository = slotRepository;
+		this.orderService = orderService;
 	}
 
 	public Slot getSlotById(int id)

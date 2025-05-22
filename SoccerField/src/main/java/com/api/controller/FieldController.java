@@ -2,6 +2,7 @@ package com.api.controller;
 
 import com.api.entity.Field;
 import com.api.service.FieldService;
+import oracle.jdbc.proxy.annotation.Post;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,7 @@ public class FieldController
 	@GetMapping
 	public ResponseEntity<List<Field>> getAllFields()
 	{
+		System.out.println("Fetching all fields");
 		List<Field> fields = fieldService.getAllFields();
 		return fields != null && !fields.isEmpty()
 				? ResponseEntity.ok(fields)
@@ -28,6 +30,7 @@ public class FieldController
 	@PostMapping("/add")
 	public ResponseEntity<Field> addField(@RequestParam String fieldName, @RequestParam float price, @RequestParam MultipartFile image)
 	{
+		System.out.println("Field name: " + fieldName);
 		Field field = fieldService.addField(fieldName, price, image);
 		return field != null ? ResponseEntity.ok(field) : ResponseEntity.status(400).body(null);
 	}
@@ -46,15 +49,15 @@ public class FieldController
 		return fields != null && !fields.isEmpty() ? ResponseEntity.ok(fields) : ResponseEntity.status(404).body(null);
 	}
 
-	@PatchMapping("/update/{id}")
-	public ResponseEntity<Field> updateField(@PathVariable int fieldId, @RequestParam String fieldName, @RequestParam float price, @RequestParam MultipartFile image)
+	@PostMapping("/update")
+	public ResponseEntity<Field> updateField(@RequestParam int fieldId, @RequestParam String fieldName, @RequestParam float price, @RequestParam MultipartFile image)
 	{
 		Field field = fieldService.updateField(fieldId, fieldName, price, image);
 		return field != null ? ResponseEntity.ok(field) : ResponseEntity.status(404).body(null);
 	}
 
 	@DeleteMapping("/delete")
-	public ResponseEntity<String> deleteField(@RequestParam int fieldId)
+	public ResponseEntity<String> deleteField(@RequestParam long fieldId)
 	{
 		return fieldService.deleteField(fieldId)
 				? ResponseEntity.ok("Field deleted successfully")

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface FieldRepository extends JpaRepository<Field, Integer>
+public interface FieldRepository extends JpaRepository<Field, Long>
 {
 	@Query("SELECT f FROM Field f WHERE " +
 			"(:fieldName IS NULL OR f.fieldName LIKE CONCAT('%', :fieldName, '%')) AND " +

@@ -56,7 +56,23 @@
 <body>
 <div id="sidebar-container"></div>
 <div class="main-content">
-    <h1>Quản lý tài khoản</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Quản lý khung giờ </h1>
+        <button style="
+              background-color: #4CAF50; /* màu xanh lá */
+              color: white;             /* chữ màu trắng */
+              padding: 8px 16px;        /* khoảng cách trong nút */
+              border: none;             /* bỏ viền mặc định */
+              border-radius: 5px;       /* bo góc */
+              cursor: pointer;          /* con trỏ khi hover */
+              font-weight: bold;
+              transition: background-color 0.3s ease;
+            "
+                onmouseover="this.style.backgroundColor='#45a049'"
+                onmouseout="this.style.backgroundColor='#4CAF50'" onclick="openForm()">
+            ADD
+        </button>
+    </div>
     <table id="slotTable">
         <thead>
         <tr>
@@ -72,6 +88,40 @@
         </tbody>
     </table>
 </div>
+<!-- Popup form -->
+<div id="addSlotForm"
+     style="display:none; position:fixed; top:20%; left:30%; background:white; padding:20px; border:1px solid gray; border-radius:10px;">
+    <h3>Add New Slot</h3>
+    <label>Start time:</label><br>
+    <input type="time" id="start"><br><br>
+
+    <label>Price:</label><br>
+    <input type="time" id="end"><br><br>
+
+    <label>Surcharge:</label><br>
+    <input type="number" id="surcharge"><br><br>
+
+    <button onclick="add()">Submit</button>
+    <button onclick="closeForm()">Cancel</button>
+</div>
+<div id="updateSlotForm"
+     style="display:none; position:fixed; top:20%; left:30%; background:white; padding:20px; border:1px solid gray; border-radius:10px;">
+    <h3>Update Slot</h3>
+    <label>Slot Id:</label><br>
+    <input type="text" id="updateslotId" readonly><br><br>
+
+    <label>Start time:</label><br>
+    <input type="time" id="updatestart"><br><br>
+
+    <label>End time:</label><br>
+    <input type="time" id="updateend"><br><br>
+
+    <label>Surcharge:</label><br>
+    <input type="number" id="updatesurcharge"><br><br>
+
+    <button onclick="update()">Submit</button>
+    <button onclick="closeFormUpdate()">Cancel</button>
+</div>
 <script>
     fetch('sidebar.html')
       .then(res => res.text())
@@ -80,7 +130,158 @@
       });
 </script>
 <script>
-    // call api
+    fetch(`http://localhost:8082/api/slot`, {
+        method: 'GET'
+    })
+    .then(response => {
+        if (response.ok) return response.json();
+        throw new Error('Fetch data failed');
+    })
+    .then(data => {
+        console.log('Search result:', data);
+        renderTable(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Không có dữ liệu.');
+    });
+    function renderTable(data) {
+        const tbody = document.querySelector('#slotTable tbody');
+        tbody.innerHTML = ''; // Clear existing rows
+        data.forEach(slot => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${slot.slotId}</td>
+                <td>${slot.startTime}</td>
+                <td>${slot.endTime}</td>
+                <td>${slot.surcharge}</td>
+                <td>
+                    <div style="display: flex; justify-content: space-around; align-items: center;">
+                        <button
+                        type="button"
+                        style="background:green;color:white;padding: 5px 10px;
+                        border: none;border-radius: 4px;width:100px"
+                        onclick="openFormUpdate(${slot.slotId})">Sửa</button>
+                        <button
+                        type="button"
+                        style="background:red;color:white;padding: 5px 10px;
+                        border: none;border-radius: 4px;width:100px"
+                        onclick="deleteSlot(${slot.slotId})">Xóa</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+</script>
+<script>
+    function openForm() {
+        document.getElementById('addSlotForm').style.display = 'block';
+    }
+
+    function closeForm() {
+        document.getElementById('addSlotForm').style.display = 'none';
+    }
+
+    function add() {
+        const start = document.getElementById('start').value;
+        const end = document.getElementById('end').value;
+        const surcharge = document.getElementById('surcharge').value;
+
+        if (!start || !end || !surcharge) {
+            alert("Please fill all fields.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("startTime", start);
+        formData.append("endTime", end);
+        formData.append("surcharge", surcharge);
+
+        fetch("http://localhost:8082/api/slot/add", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Failed to add slot");
+            return response.json();
+        })
+        .then(data => {
+            alert("Slot added successfully!");
+            console.log("Created:", data);
+            location.reload();
+            closeForm();
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Error adding slot.");
+        });
+    }
+</script>
+<script>
+    function deleteSlot(id) {
+        if (confirm("Bạn có chắc chắn muốn xóa khung giờ này không?")) {
+            fetch(`http://localhost:8082/api/slot/delete?slotId=${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Khung giờ đã được xóa thành công!");
+                    location.reload();
+                } else {
+                    throw new Error('Xóa giờ thất bại');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Xóa giờ thất bại.');
+            });
+        }
+    }
+    function openFormUpdate(id) {
+        document.getElementById('updateSlotForm').style.display = 'block';
+        document.getElementById('updateslotId').value = id;
+    }
+
+    function closeFormUpdate() {
+        document.getElementById('updateSlotForm').style.display = 'none';
+    }
+    function update() {
+        const slotId = document.getElementById('updateslotId').value;
+        const start = document.getElementById('updatestart').value.trim();
+        const end = document.getElementById('updateend').value;
+        const surcharge = document.getElementById('updatesurcharge').value;
+
+        if (!start || !end || !surcharge) {
+            alert("Please fill all fields.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("slotId", slotId);
+        formData.append("startTime", start);
+        formData.append("endTime", end);
+        formData.append("surcharge", surcharge);
+
+        fetch(`http://localhost:8082/api/slot/update`, {
+            method: "POST",
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Failed to update field");
+            return response.json();
+        })
+        .then(data => {
+            alert("Field updated successfully!");
+            console.log("Updated:", data);
+            location.reload();
+            closeFormUpdate();
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Error updating field.");
+        });
+    }
 </script>
 </body>
 </html>
