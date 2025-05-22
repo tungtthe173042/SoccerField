@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login</title>
+    <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: 'Segoe UI', sans-serif;
+        }
+
+        body, html {
+          height: 100%;
+        }
+
+        .background {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: url('https://suachualaptop24h.com/upload_images/images/2024/08/06/hinh-nen-san-bong-dep-banner.jpg') no-repeat center center/cover;
+          z-index: -1;
+        }
+
+        .login-box {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 300px;
+          padding: 30px;
+          transform: translate(-50%, -50%);
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 12px;
+          box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
+          backdrop-filter: blur(10px);
+          color: #fff;
+        }
+
+        .login-box h2 {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+
+        .login-box input[type="text"],
+        .login-box input[type="password"] {
+          width: 100%;
+          padding: 10px;
+          margin: 10px 0;
+          border: none;
+          border-bottom: 1px solid #ccc;
+          background: transparent;
+          color: #fff;
+        }
+
+        .login-box input::placeholder {
+          color: #ddd;
+        }
+
+        .login-box .options {
+          display: flex;
+          justify-content: space-between;
+          font-size: 14px;
+          margin: 10px 0;
+        }
+
+        .login-box .options a {
+          color: #ccc;
+          text-decoration: none;
+        }
+
+        .login-box button {
+          width: 100%;
+          padding: 10px;
+          background-color: #fff;
+          color: #000;
+          border: none;
+          border-radius: 6px;
+          font-weight: bold;
+          cursor: pointer;
+          margin-top: 10px;
+        }
+
+        .login-box p {
+          text-align: center;
+          margin-top: 15px;
+          font-size: 14px;
+        }
+
+        .login-box p a {
+          color: #fff;
+          text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="background"></div>
+<div class="login-box">
+    <h2>Login</h2>
+    <form>
+        <input type="text" placeholder="User name" required/>
+        <input type="password" placeholder="Password" required/>
+        <div class="options">
+            <a href="fogot_password.html">Forgot password?</a>
+        </div>
+        <button type="button" onclick="handleLogin()">Log In</button>
+        <p>Don't have an account? <a href="register.html">Register</a></p>
+    </form>
+</div>
+<script>
+    function handleLogin() {
+    const username = document.querySelector('input[type="text"]').value;
+    const password = document.querySelector('input[type="password"]').value;
+    console.log('Username:', username);
+    console.log('Password:', password);
+
+    const params = new URLSearchParams();
+    params.append("userName", username);
+    params.append("password", password);
+
+    fetch('http://localhost:8082/api/auth/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: params.toString()
+    })
+    .then(response => {
+        console.log('Status:', response.status);
+        if (response.ok) return response.json();
+        throw new Error('Login failed');
+    })
+    .then(data => {
+        console.log('Login successful:', data);
+        window.location.href = 'index.html';
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Login failed. Please check your credentials.');
+    });
+}
+
+</script>
+</body>
+</html>

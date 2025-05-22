@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Register</title>
+    <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: 'Segoe UI', sans-serif;
+        }
+
+        body, html {
+          height: 100%;
+        }
+
+        .background {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: url('https://suachualaptop24h.com/upload_images/images/2024/08/06/hinh-nen-san-bong-dep-banner.jpg') no-repeat center center/cover;
+          z-index: -1;
+        }
+
+        .login-box {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 320px;
+          padding: 30px;
+          transform: translate(-50%, -50%);
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 12px;
+          box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
+          backdrop-filter: blur(10px);
+          color: #fff;
+        }
+
+        .login-box h2 {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+
+        .login-box input {
+          width: 100%;
+          padding: 10px;
+          margin: 10px 0;
+          border: none;
+          border-bottom: 1px solid #ccc;
+          background: transparent;
+          color: #fff;
+        }
+
+        .login-box input::placeholder {
+          color: #ddd;
+        }
+
+        .login-box button {
+          width: 100%;
+          padding: 10px;
+          background-color: #fff;
+          color: #000;
+          border: none;
+          border-radius: 6px;
+          font-weight: bold;
+          cursor: pointer;
+          margin-top: 10px;
+        }
+
+        .login-box p {
+          text-align: center;
+          margin-top: 15px;
+          font-size: 14px;
+        }
+
+        .login-box p a {
+          color: #fff;
+          text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="background"></div>
+<div class="login-box">
+    <h2>Register</h2>
+    <form>
+        <input type="text" placeholder="Username" required/>
+        <input type="text" placeholder="Phone" required/>
+        <input type="password" placeholder="Password" required/>
+        <input type="password" placeholder="Confirm Password" required/>
+        <button type="submit">Register</button>
+        <p>Already have an account? <a href="login.html">Login</a></p>
+    </form>
+</div>
+</body>
+</html>

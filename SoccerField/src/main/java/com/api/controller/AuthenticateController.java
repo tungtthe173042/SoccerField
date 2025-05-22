@@ -3,6 +3,7 @@ package com.api.controller;
 import com.api.entity.User;
 import com.api.service.AuthenticateService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,9 +14,13 @@ public class AuthenticateController
 	private AuthenticateService authenticateService;
 
 	@PostMapping("/login")
-	public User login(@RequestParam String userName, @RequestParam String password)
+	public ResponseEntity<User> login(@RequestParam String userName, @RequestParam String password)
 	{
-		return authenticateService.login(userName, password);
+		System.out.println("Received login: userName=" + userName + ", password=" + password);
+		User user = authenticateService.login(userName, password);
+		return user != null
+				? ResponseEntity.ok(user)
+				: ResponseEntity.status(401).body(null);
 	}
 
 	@PostMapping("/register")
