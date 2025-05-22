@@ -1,4 +1,4 @@
-package com.example.demo.entity;
+package com.api.entity;
 
 import javax.persistence.*;
 
@@ -11,7 +11,7 @@ public class User {
 	@Column(name = "user_id")
 	private int userId;
 
-	@Column(name = "user_name")
+	@Column(name = "user_name", unique = true)
 	private String userName;
 	private String password;
 	private String phone;

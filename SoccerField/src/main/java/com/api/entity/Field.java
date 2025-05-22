@@ -1,4 +1,4 @@
-package com.example.demo.entity;
+package com.api.entity;
 
 import javax.persistence.*;
 
@@ -8,13 +8,12 @@ public class Field
 {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
-	@Column(name = "field_id")
+	@Column(name = "field_id",unique = true)
 	private Long fieldId;
 
 	@Column(name = "field_name")
 	private String fieldName;
 	private float price;
-	private int status = 1; // 1: active, 0: inactive
 
 	@Column(name = "image_url")
 	private String imageUrl;
@@ -54,16 +53,6 @@ public class Field
 	public void setPrice(float price)
 	{
 		this.price = price;
-	}
-
-	public int getStatus()
-	{
-		return status;
-	}
-
-	public void setStatus(int status)
-	{
-		this.status = status;
 	}
 
 	public String getImageUrl()
